@@ -1,0 +1,5 @@
+postgres-data/
+mysql-data/
+bin/docker-compose
+redash_base.dump
+docker-compose.yml
