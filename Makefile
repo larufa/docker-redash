@@ -87,7 +87,7 @@ $(DOCKER_COMPOSE_YAML): $(DOCKER_COMPOSE_YAML).erb Makefile $(DOCKER_COMPOSE)
 	erb $< >$@
 
 $(DOCKER_COMPOSE): $(BIN_DIR)
-	curl -L https://github.com/docker/compose/releases/download/1.14.0/docker-compose-$(shell uname -s)-$(shell uname -m) > $@
+	curl -L https://github.com/docker/compose/releases/download/$(DOCKER_COMPOSE_VERSION)/docker-compose-$(shell uname -s)-$(shell uname -m) > $@
 	chmod +x $@
 	$@ version
 
