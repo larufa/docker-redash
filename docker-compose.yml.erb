@@ -1,0 +1,82 @@
+version: '2.1'
+services:
+  redash:
+    container_name: <%= ENV['REDASH_CONTAINER_NAME'] %>
+    image: redash/redash:<%= ENV['REDASH_VERSION'] %>
+    command: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
+      REDASH_COOKIE_SECRET: <%= ENV['REDASH_COOKIE_SECRET'] %>
+    healthcheck:
+      test: ["CMD-SHELL", "curl localhost:5000"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+
+  worker:
+    container_name: <%= ENV['REDASH_WORKER_CONTAINER_NAME'] %>
+    image: redash/redash:<%= ENV['REDASH_VERSION'] %>
+    command: scheduler
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
+      QUEUES: "queries,scheduled_queries,celery"
+      WORKERS_COUNT: <%= ENV['REDASH_WORKERS_COUNT'] %>
+
+  redis:
+    container_name: <%= ENV['REDIS_CONTAINER_NAME'] %>
+    image: redis:3.0-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+
+  postgres:
+    container_name: <%= ENV['POSTGRES_CONTAINER_NAME'] %>
+    image: postgres:9.5.6-alpine
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+
+  mysql:
+    container_name: <%= ENV['MYSQL_CONTAINER_NAME'] %>
+    image: mysql:<%= ENV['MYSQL_VERSION'] %>
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: <%= ENV['MYSQL_ROOT_PASSWORD'] %>
+      MYSQL_DATABASE: <%= ENV['MYSQL_DATABASE'] %>
+      MYSQL_USER: <%= ENV['MYSQL_USER'] %>
+      MYSQL_PASSWORD: <%= ENV['MYSQL_PASSWORD'] %>
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -p<%= ENV['MYSQL_ROOT_PASSWORD'] %>"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+
+  nginx:
+    container_name: <%= ENV['NGINX_CONTAINER_NAME'] %>
+    image: redash/nginx:<%= ENV['NGINX_VERSION'] %>
+    ports:
+      - "<%= ENV['PORT'] %>:80"
+    depends_on:
+      redash:
+        condition: service_healthy
