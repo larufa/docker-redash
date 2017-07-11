@@ -29,7 +29,7 @@ MYSQL_PASSWORD      := redash
 
 REDASH_ADMIN_PASSWORD := redash
 REDASH_ORG_NAME       := treasure
-REDASH_COOKIE_SECRET  := $(shell pwgen 32 -1)
+REDASH_COOKIE_SECRET  := treasure
 REDASH_WOKERS_COUNT   := 2
 
 BIN_DIR                := $(shell pwd)/bin
