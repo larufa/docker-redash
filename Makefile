@@ -111,6 +111,7 @@ redash_database/up:
 	-$(DOCKER_COMPOSE_CMD) up -d $(POSTGRES_CONTAINER_NAME) && until ($(DOCKER_CMD) ps | grep $(POSTGRES_CONTAINER_NAME) | grep healthy) do sleep 1; done
 
 $(POSTGRES_DATA_DIR)/redash_base.dump: $(POSTGRES_DATA_DIR)
+	$(DOCKER_COMPOSE_CMD) exec $(POSTGRES_CONTAINER_NAME) chmod 775 /var/lib/postgresql/data
 	cp $(notdir $@) $<
 
 $(POSTGRES_DATA_DIR):
