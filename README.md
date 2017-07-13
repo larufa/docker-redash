@@ -9,6 +9,7 @@
   * 動作は `-n` オプションを付けて確認出来るので気になる方は試してみて下さい
       * docker-compose の取得
       * redash で使用する postgres のセットアップ
+* vagrant を使う場合は root ユーザに変更する必要があります
 
 ```bash
 $ make install setup

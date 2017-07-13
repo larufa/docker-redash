@@ -48,8 +48,8 @@ TARGET  :=
 
 .PHONY: install setup up clean stop rm clean reset reset/* debug/*
 
-install: $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_YAML) ##@prepare install docker-compose and generate docker-compose.yml
-setup : clean docker/pull redash_database/restore ##@prepare setup redash_database(postgres)
+install: $(DOCKER_COMPOSE) $(DOCKER_COMPOSE_YAML) docker/pull ##@prepare install docker-compose and generate docker-compose.yml
+setup : clean redash_database/restore ##@prepare setup redash_database(postgres)
 
 up: $(DOCKER_COMPOSE_YAML) docker/up ##@basic up redash and mysql containers
 stop: docker/stop ##@basic stop containers
@@ -100,18 +100,17 @@ $(BIN_DIR):
 redash_database/clean:
 	rm -rf $(POSTGRES_DATA_DIR)
 
-redash_database/setup: $(POSTGRES_DATA_DIR) redash_database/up # If you wanted to initialize redash (unused target)
+redash_database/setup: redash_database/up # If you wanted to initialize redash (unused target)
 	$(DOCKER_COMPOSE_CMD) run --rm $(REDASH_CONTAINER_NAME) create_db
 	ls $(POSTGRES_DATA_DIR)
 
-redash_database/restore: $(POSTGRES_DATA_DIR) redash_database/up $(POSTGRES_DATA_DIR)/redash_base.dump
+redash_database/restore: redash_database/up $(POSTGRES_DATA_DIR)/redash_base.dump
 	$(DOCKER_COMPOSE_CMD) exec $(POSTGRES_CONTAINER_NAME) su -l postgres -c "psql -f /var/lib/postgresql/data/redash_base.dump"
 
 redash_database/up:
-	-$(DOCKER_COMPOSE_CMD) up -d $(POSTGRES_CONTAINER_NAME) && until ($(DOCKER_CMD) ps | grep $(POSTGRES_CONTAINER_NAME) | grep healthy) do sleep 1; done
+	$(DOCKER_COMPOSE_CMD) up -d $(POSTGRES_CONTAINER_NAME) && until ($(DOCKER_CMD) ps | grep $(POSTGRES_CONTAINER_NAME) | grep healthy) do sleep 1; done
 
 $(POSTGRES_DATA_DIR)/redash_base.dump: $(POSTGRES_DATA_DIR)
-	$(DOCKER_COMPOSE_CMD) exec $(POSTGRES_CONTAINER_NAME) chmod 775 /var/lib/postgresql/data
 	cp $(notdir $@) $<
 
 $(POSTGRES_DATA_DIR):
@@ -146,3 +145,12 @@ help: help_fun = \
 	print "\n"; }
 help:
 	@perl -e '$(help_fun)' $(MAKEFILE_LIST)
+
+# Override help target
+# http://savannah.gnu.org/bugs/?36106
+ifeq ("$(shell make -v | head -n1 | awk '{print $$3}')", "3.82")
+$(warning "You are using GNU Make 3.82, this version has bugs.")
+
+help:
+	@grep "##@" $(MAKEFILE_LIST) | grep -v grep
+endif
