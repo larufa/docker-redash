@@ -146,7 +146,7 @@ help: help_fun = \
 help:
 	@perl -e '$(help_fun)' $(MAKEFILE_LIST)
 
-# Override deploy target
+# Override help target
 # http://savannah.gnu.org/bugs/?36106
 ifeq ("$(shell make -v | head -n1 | awk '{print $$3}')", "3.82")
 $(warning "You are using GNU Make 3.82, this version has bugs.")
