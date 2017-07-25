@@ -126,12 +126,23 @@ $(MYSQL_DATA_DIR):
 	mkdir $@
 
 
-# And add help text after each target name starting with '##'
-# A category can be added with @category
 help: green       = $(shell tput -Txterm setaf 2)
 help: white       = $(shell tput -Txterm setaf 7)
 help: yellow      = $(shell tput -Txterm setaf 3)
 help: color_reset = $(shell tput -Txterm sgr0)
+
+# http://savannah.gnu.org/bugs/?36106
+ifeq ("$(shell make -v | head -n1 | awk '{print $$3}')", "3.82")
+
+$(warning "You are using GNU Make 3.82, this version has bugs.")
+
+help:
+	@grep "##@" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/\(.*\):.*##@[^ ]*\(.*\)/${yellow}\1${white}:${green}!\2${color_reset}/g' | column -t -s!
+
+else
+
+# And add help text after each target name starting with '##'
+# A category can be added with @category
 help: help_fun = \
 	%help; \
 	while(<>) { push @{$$help{$$2 // 'options'}}, [$$1, $$3] if /^([a-zA-Z\-\_\.\%\/]+)\s*:.*\#\#(?:@([0-9a-zA-Z\-\_\.]+))?\s(.*)$$/ }; \
@@ -146,11 +157,4 @@ help: help_fun = \
 help:
 	@perl -e '$(help_fun)' $(MAKEFILE_LIST)
 
-# Override help target
-# http://savannah.gnu.org/bugs/?36106
-ifeq ("$(shell make -v | head -n1 | awk '{print $$3}')", "3.82")
-$(warning "You are using GNU Make 3.82, this version has bugs.")
-
-help:
-	@grep "##@" $(MAKEFILE_LIST) | grep -v grep
 endif
