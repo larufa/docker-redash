@@ -23,6 +23,8 @@ $ make install setup
 $ make up PORT=8080
 ```
 
+### 動作確認
+
 次の URL にアクセスします（PORT 番号は適宜変更すること）。
 
 [http://localhost:8080/](http://localhost:8080/)

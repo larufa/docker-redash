@@ -11,7 +11,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONUNBUFFERED: 0
-      REDASH_LOG_LEVEL: "INFO"
+      REDASH_LOG_LEVEL: "DEBUG"
       REDASH_REDIS_URL: "redis://redis:6379/0"
       REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
       REDASH_COOKIE_SECRET: <%= ENV['REDASH_COOKIE_SECRET'] %>
@@ -30,7 +30,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONUNBUFFERED: 0
-      REDASH_LOG_LEVEL: "INFO"
+      REDASH_LOG_LEVEL: "DEBUG"
       REDASH_REDIS_URL: "redis://redis:6379/0"
       REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
       QUEUES: "queries,scheduled_queries,celery"
@@ -59,6 +59,8 @@ services:
   mysql:
     container_name: <%= ENV['MYSQL_CONTAINER_NAME'] %>
     image: mysql:<%= ENV['MYSQL_VERSION'] %>
+    ports:
+      - "<%= ENV['MYSQL_PORT'] %>:3306"
     volumes:
       - ./mysql-data:/var/lib/mysql
     environment:
