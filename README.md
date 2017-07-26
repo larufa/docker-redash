@@ -14,7 +14,7 @@
       * redash で使用する postgres のセットアップ
 * vagrant を使う場合は root ユーザに変更する必要があります
 
-```bash
+```
 $ make install setup
 ```
 
@@ -22,12 +22,12 @@ $ make install setup
 
 Redash にアクセスする際の `PORT` 番号は自分の環境でバインド可能なものを指定すること。
 
-```bash
+```
 $ make up PORT=8080
 ```
 
 ターミナルをもう一つ開いてコンテナの状態を確認します。
-```bash
+```
 $ docker ps
 CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS                    PORTS                           NAMES
 764d565b3fac        redash/nginx:latest     "nginx -g 'daemon ..."   13 minutes ago      Up 4 seconds              443/tcp, 0.0.0.0:8080->80/tcp   nginx
@@ -40,7 +40,7 @@ d4b5908caeb0        postgres:9.5.6-alpine   "docker-entrypoint..."   14 minutes 
 
 止める時は次のコマンドです。
 
-```bash
+```
 $ make stop
 Stopping nginx ... done
 Stopping worker ... done
@@ -72,10 +72,10 @@ Stopping postgres ... done
 
 その前に、データがないので MySQL CLI Client で MySQL Server に接続してテーブルを作成してデータを入れてみましょう。
 
-* User: redash
-* Password: redash
+* User: `redash`
+* Password: `redash`
 
-```bash
+```
 $ mysql -h127.0.0.1 -P3306 -uredash -p redash
 Enter password:
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -125,7 +125,7 @@ mysql> select * from test;
 
 色々触ってみて困った時は、次のコマンドで環境を reset 出来ます（起動後に設定した Redash の設定や、MySQL のデータが初期化されます）。
 
-```bash
+```
 $ make reset up
 ```
 
@@ -141,7 +141,7 @@ $ make reset up
 
 その1
 
-```bash
+```
 $ make debug/mysql
 root@6a897d20ed22:/# ps aux
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -152,7 +152,7 @@ root      2670  0.0  0.1  17504  2068 pts/0    R+   12:42   0:00 ps aux
 
 その2（その1 では container に入るために bash が実行されています）
 
-```bash
+```
 $ make exec/mysql COMMAND="ps aux"
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 mysql        1  0.0  9.8 1270724 200952 ?      Ssl  11:42   0:01 mysqld
@@ -167,7 +167,7 @@ root      2709  0.0  0.1  17504  2116 pts/0    Rs+  12:43   0:00 ps aux
 
 ※ `REDASH_CONTAINER_NAME` のみ **redash** で固定です（これは redash/nginx の nginx の設定ファイルを見れば分かります）
 
-```bash
+```
 $ grep -E "^[A-Z]+.*" Makefile | sed -e 's/[^A-Z] *://g' | column -t -s "="
 NGINX_VERSION                       latest
 MYSQL_VERSION                       5.7
