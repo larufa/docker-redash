@@ -59,6 +59,7 @@ services:
   mysql:
     container_name: <%= ENV['MYSQL_CONTAINER_NAME'] %>
     image: mysql:<%= ENV['MYSQL_VERSION'] %>
+    command: --character-set-server=utf8 --collation-server=utf8_unicode_ci
     ports:
       - "<%= ENV['MYSQL_PORT'] %>:3306"
     volumes:
