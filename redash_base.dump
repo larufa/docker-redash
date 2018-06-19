@@ -71,6 +71,22 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 SET search_path = public, pg_catalog;
 
+--
+-- Name: queries_search_vector_update(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION queries_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = ((to_tsvector('pg_catalog.simple', regexp_replace(coalesce(CAST(NEW.id AS TEXT), ''), '[-@.]', ' ', 'g')) || to_tsvector('pg_catalog.simple', regexp_replace(coalesce(NEW.name, ''), '[-@.]', ' ', 'g'))) || to_tsvector('pg_catalog.simple', regexp_replace(coalesce(NEW.description, ''), '[-@.]', ' ', 'g'))) || to_tsvector('pg_catalog.simple', regexp_replace(coalesce(NEW.query, ''), '[-@.]', ' ', 'g'));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.queries_search_vector_update() OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -570,7 +586,8 @@ CREATE TABLE queries (
     is_draft boolean NOT NULL,
     schedule character varying(10),
     schedule_failures integer NOT NULL,
-    options text NOT NULL
+    options text NOT NULL,
+    search_vector tsvector
 );
 
 
@@ -688,7 +705,8 @@ CREATE TABLE users (
     email character varying(320) NOT NULL,
     password_hash character varying(128),
     groups integer[],
-    api_key character varying(40) NOT NULL
+    api_key character varying(40) NOT NULL,
+    profile_image_url character varying
 );
 
 
@@ -766,9 +784,7 @@ CREATE TABLE widgets (
     text text,
     width integer NOT NULL,
     options text NOT NULL,
-    dashboard_id integer NOT NULL,
-    type character varying(100),
-    query_id integer
+    dashboard_id integer NOT NULL
 );
 
 
@@ -941,7 +957,7 @@ SELECT pg_catalog.setval('access_permissions_id_seq', 1, false);
 --
 
 COPY alembic_version (version_num) FROM stdin;
-d1eae8b9893e
+969126bd800f
 \.
 
 
@@ -1065,6 +1081,8 @@ COPY events (id, org_id, user_id, action, object_type, object_id, additional_pro
 6	1	1	view	page	admin/data_source	{"ip": "172.18.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"}	2017-07-10 09:04:17.824+00
 7	1	1	test	datasource	1	{"ip": "172.18.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"}	2017-07-10 09:04:18.91+00
 8	1	1	test	datasource	1	{"ip": "172.18.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"}	2017-07-10 09:04:32.393+00
+9	1	1	login	redash	\N	{"ip": "172.19.0.1", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36"}	2018-06-19 09:23:53+00
+10	1	1	view	page	personal_homepage	{"ip": "172.19.0.1", "user_name": "admin", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36"}	2018-06-19 09:23:51.553+00
 \.
 
 
@@ -1072,7 +1090,7 @@ COPY events (id, org_id, user_id, action, object_type, object_id, additional_pro
 -- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('events_id_seq', 8, true);
+SELECT pg_catalog.setval('events_id_seq', 10, true);
 
 
 --
@@ -1127,7 +1145,7 @@ SELECT pg_catalog.setval('organizations_id_seq', 1, true);
 -- Data for Name: queries; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY queries (updated_at, created_at, id, version, org_id, data_source_id, latest_query_data_id, name, description, query, query_hash, api_key, user_id, last_modified_by_id, is_archived, is_draft, schedule, schedule_failures, options) FROM stdin;
+COPY queries (updated_at, created_at, id, version, org_id, data_source_id, latest_query_data_id, name, description, query, query_hash, api_key, user_id, last_modified_by_id, is_archived, is_draft, schedule, schedule_failures, options, search_vector) FROM stdin;
 \.
 
 
@@ -1172,8 +1190,8 @@ SELECT pg_catalog.setval('query_snippets_id_seq', 1, false);
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY users (updated_at, created_at, id, org_id, name, email, password_hash, groups, api_key) FROM stdin;
-2017-07-10 09:03:43.552874+00	2017-07-10 09:03:43.552874+00	1	1	admin	admin@example.com	$6$rounds=101069$HX/oEFIrMOjokSVB$6jGxLe1uxtJ32/O7tUui3Io/zCj62i7eZK7wUC3VP2LnveDXbnWQwiIwgTppN.oX.7kh/vOfxHYJNp4w8y/Dc1	{1,2}	eQ1QSLSmytrdkpMdhl5mketiwH6CjpG157MbIsKs
+COPY users (updated_at, created_at, id, org_id, name, email, password_hash, groups, api_key, profile_image_url) FROM stdin;
+2017-07-10 09:03:43.552874+00	2017-07-10 09:03:43.552874+00	1	1	admin	admin@example.com	$6$rounds=101069$HX/oEFIrMOjokSVB$6jGxLe1uxtJ32/O7tUui3Io/zCj62i7eZK7wUC3VP2LnveDXbnWQwiIwgTppN.oX.7kh/vOfxHYJNp4w8y/Dc1	{1,2}	eQ1QSLSmytrdkpMdhl5mketiwH6CjpG157MbIsKs	\N
 \.
 
 
@@ -1203,7 +1221,7 @@ SELECT pg_catalog.setval('visualizations_id_seq', 1, false);
 -- Data for Name: widgets; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY widgets (updated_at, created_at, id, visualization_id, text, width, options, dashboard_id, type, query_id) FROM stdin;
+COPY widgets (updated_at, created_at, id, visualization_id, text, width, options, dashboard_id) FROM stdin;
 \.
 
 
@@ -1454,6 +1472,13 @@ CREATE INDEX ix_queries_is_draft ON queries USING btree (is_draft);
 
 
 --
+-- Name: ix_queries_search_vector; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_queries_search_vector ON queries USING gin (search_vector);
+
+
+--
 -- Name: ix_query_results_query_hash; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1479,6 +1504,13 @@ CREATE UNIQUE INDEX notification_destinations_org_id_name ON notification_destin
 --
 
 CREATE UNIQUE INDEX users_org_id_email ON users USING btree (org_id, email);
+
+
+--
+-- Name: queries_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER queries_search_vector_trigger BEFORE INSERT OR UPDATE ON queries FOR EACH ROW EXECUTE PROCEDURE queries_search_vector_update();
 
 
 --
