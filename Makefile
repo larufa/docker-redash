@@ -10,7 +10,7 @@ override POSTGRES_DATA_DIR := $(shell pwd)/postgres-data
 override MYSQL_DATA_DIR    := $(shell pwd)/mysql-data
 
 NGINX_VERSION  := latest
-MYSQL_VERSION  := 5.7
+MYSQL_VERSION  := 8.0
 REDASH_VERSION := latest
 
 NGINX_CONTAINER_NAME         := nginx

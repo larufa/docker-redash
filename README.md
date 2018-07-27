@@ -29,13 +29,13 @@ $ make up PORT=8080
 ターミナルをもう一つ開いてコンテナの状態を確認します。
 ```
 $ docker ps
-CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS                    PORTS                           NAMES
-764d565b3fac        redash/nginx:latest     "nginx -g 'daemon ..."   13 minutes ago      Up 4 seconds              443/tcp, 0.0.0.0:8080->80/tcp   nginx
-58e63c80d498        redash/redash:latest    "/app/bin/docker-e..."   13 minutes ago      Up 16 seconds             5000/tcp                        worker
-c8e8dbc0d281        redash/redash:latest    "/app/bin/docker-e..."   13 minutes ago      Up 15 seconds (healthy)   5000/tcp                        redash
-56237781ad62        mysql:5.7               "docker-entrypoint..."   13 minutes ago      Up 27 seconds (healthy)   0.0.0.0:3306->3306/tcp          mysql
-53986a4e2fb2        redis:3.0-alpine        "docker-entrypoint..."   13 minutes ago      Up 27 seconds (healthy)   6379/tcp                        redis
-d4b5908caeb0        postgres:9.5.6-alpine   "docker-entrypoint..."   14 minutes ago      Up 26 seconds (healthy)   5432/tcp                        postgres
+CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS                      PORTS                           NAMES
+a3d80e74b9c4        redash/nginx:latest     "nginx -g 'daemon of…"   35 minutes ago      Up 37 minutes               443/tcp, 0.0.0.0:8080->80/tcp   nginx
+986fcd970446        redash/redash:latest    "/app/bin/docker-ent…"   35 minutes ago      Up 37 minutes               5000/tcp                        worker
+4c457a8abcf9        redash/redash:latest    "/app/bin/docker-ent…"   35 minutes ago      Up 37 minutes (healthy)     5000/tcp                        redash
+6ec65873f036        mysql:8.0               "docker-entrypoint.s…"   36 minutes ago      Up 37 minutes (healthy)   0.0.0.0:3306->3306/tcp          mysql
+8d9e54a8ed8f        redis:3.0-alpine        "docker-entrypoint.s…"   36 minutes ago      Up 37 minutes (healthy)     6379/tcp                        redis
+c583a61221d3        postgres:9.5.6-alpine   "docker-entrypoint.s…"   36 minutes ago      Up 37 minutes (healthy)     5432/tcp                        postgres
 ```
 
 止める時は次のコマンドです。
@@ -79,10 +79,10 @@ Stopping postgres ... done
 $ mysql -h127.0.0.1 -P3306 -uredash -p redash
 Enter password:
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 216
-Server version: 5.7.18 MySQL Community Server (GPL)
+Your MySQL connection id is 11
+Server version: 8.0.11 MySQL Community Server - GPL
 
-Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -91,8 +91,8 @@ owners.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 mysql> CREATE TABLE `test` (
-    ->   `id` int AUTO_INCREMENT,
-    ->   `text` varchar(256),
+    ->   `id` INT AUTO_INCREMENT,
+    ->   `text` VARCHAR(256),
     ->   PRIMARY KEY (`id`)
     -> );
 Query OK, 0 rows affected (0.07 sec)
@@ -170,7 +170,7 @@ root      2709  0.0  0.1  17504  2116 pts/0    Rs+  12:43   0:00 ps aux
 ```
 $ grep -E "^[A-Z]+.*" Makefile | sed -e 's/[^A-Z] *://g' | column -t -s "="
 NGINX_VERSION                       latest
-MYSQL_VERSION                       5.7
+MYSQL_VERSION                       8.0
 REDASH_VERSION                      latest
 NGINX_CONTAINER_NAME                nginx
 MYSQL_CONTAINER_NAME                mysql
