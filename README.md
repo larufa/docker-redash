@@ -187,7 +187,7 @@ MYSQL_PASSWORD                      redash
 REDASH_ADMIN_PASSWORD               redash
 REDASH_ORG_NAME                     treasure
 REDASH_COOKIE_SECRET                treasure
-REDASH_WOKERS_COUNT                 2
+REDASH_WORKERS_COUNT                2
 BIN_DIR                             $(shell pwd)/bin
 DOCKER_COMPOSE_YAML                 docker-compose.yml
 DOCKER_CMD                          $(shell which docker)
