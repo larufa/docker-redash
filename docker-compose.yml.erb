@@ -1,7 +1,8 @@
-version: '2.1'
+version: '2.4'
 services:
   redash:
     container_name: <%= ENV['REDASH_CONTAINER_NAME'] %>
+    platform: linux/amd64
     image: redash/redash:<%= ENV['REDASH_VERSION'] %>
     command: server
     depends_on:
@@ -21,8 +22,9 @@ services:
       timeout: 10s
       retries: 6
 
-  worker:
-    container_name: <%= ENV['REDASH_WORKER_CONTAINER_NAME'] %>
+  scheduler:
+    container_name: <%= ENV['REDASH_SCHEDULER_CONTAINER_NAME'] %>
+    platform: linux/amd64
     image: redash/redash:<%= ENV['REDASH_VERSION'] %>
     command: scheduler
     depends_on:
@@ -33,8 +35,24 @@ services:
       REDASH_LOG_LEVEL: "DEBUG"
       REDASH_REDIS_URL: "redis://redis:6379/0"
       REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
-      QUEUES: "queries,scheduled_queries,celery"
+      REDASH_COOKIE_SECRET: <%= ENV['REDASH_COOKIE_SECRET'] %>
+
+  worker:
+    container_name: <%= ENV['REDASH_WORKER_CONTAINER_NAME'] %>
+    platform: linux/amd64
+    image: redash/redash:<%= ENV['REDASH_VERSION'] %>
+    command: worker
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: "DEBUG"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
+      QUEUES: "schemas queries scheduled_queries periodic emails default"
       WORKERS_COUNT: <%= ENV['REDASH_WORKERS_COUNT'] %>
+      REDASH_COOKIE_SECRET: <%= ENV['REDASH_COOKIE_SECRET'] %>
 
   redis:
     container_name: <%= ENV['REDIS_CONTAINER_NAME'] %>
@@ -58,6 +76,7 @@ services:
 
   mysql:
     container_name: <%= ENV['MYSQL_CONTAINER_NAME'] %>
+    platform: linux/amd64
     image: mysql:<%= ENV['MYSQL_VERSION'] %>
     command: --character-set-server=utf8 --collation-server=utf8_unicode_ci
     ports:
@@ -77,6 +96,7 @@ services:
 
   nginx:
     container_name: <%= ENV['NGINX_CONTAINER_NAME'] %>
+    platform: linux/amd64
     image: redash/nginx:<%= ENV['NGINX_VERSION'] %>
     ports:
       - "<%= ENV['PORT'] %>:80"
